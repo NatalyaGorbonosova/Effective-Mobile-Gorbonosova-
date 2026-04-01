@@ -1,0 +1,161 @@
+openapi: 3.0.0
+info:
+  title: Partner Stores
+  version: 1.0.0
+  description: Получение списка магазинов партнеров
+
+servers:
+  - url: http://181.1.1.0
+    description: Dev server url
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Partener Stores
+    description: Контроллер для работы с магазинами партнеров
+
+paths:
+  /api/v1/parteners/stores:
+    
+    get:
+      tags:
+        - Partner Stores
+      summary: Получение списка магазинов партнера
+      description:
+        Получение списка магазинов партнера
+      security:
+        - bearerAuth: []
+      
+      responses:
+        '200':
+          description: Список магазинов получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      stores:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Store'
+        
+        '401':
+          description: Требуется авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    status: "UNAUTHORIZED"
+                    code: 401
+                    title: "Требуется авторизация"
+                    detail: "Для просмотра списка магазинов необходима аутентификация"
+        
+        '404':
+          description: Ресурс не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                NotFoundExample:
+                  value:
+                    status: NOT_FOUND
+                    code: 404
+                    title: Ресурс не найден
+                    detail: "Запрошенный ресурс не существует или был перемещён. Пожалуйста, проверьте правильность ссылки или вернитесь назад."
+
+
+        '500':
+          description: |
+            **Внутренняя ошибка сервера** 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                databaseError:
+                  summary: Ошибка базы данных
+                  value:
+                    status: "INTERNAL_SERVER_ERROR"
+                    code: 500
+                    title: "Внутренняя ошибка сервера"
+                    detail: "Ошибка подключения к базе данных"
+ 
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Store:
+      type: object
+      description: Данные магазина
+      required: 
+        - id
+        - name
+        - deliveryText
+        - icon
+        - storeURL
+      properties: 
+        id:
+          type: string
+          format: uuid
+          description: 	Уникальный идентификатор магазина
+          example: '00112233-4455-6677-8899-aabbccddeeff'
+        name:
+          type: string
+          description: Название магазина
+          example: 'METRO'
+        deliveryText:
+          type: string
+          description: Текст о ближайшей доставки
+          example: 'Ближайшая доставка сегодня 21:00-23:00'
+        icon:
+          type: string
+          format: uri
+          description: полный URL иконки магазина
+          example: 'https://cdn.example.com/icons/metro.png'
+        storeURL:
+          type: string
+          format: uri
+          description: ссылка на внешний ресурс
+          example: 'https://www.metro.ru'
+    
+
+    ErrorResponse:
+      type: object
+      description: Стандартная структура ошибки
+      required:
+        - status
+        - code
+        - title
+      properties:
+        status:
+          type: string
+          description: Код статуса ошибки
+          example: "BAD_REQUEST"
+        code:
+          type: integer
+          description: Числовой код ошибки
+          example: 400
+        title:
+          type: string
+          description: Заголовок ошибки для пользователя
+          example: "Неверный запрос"
+        detail:
+          type: string
+          description: Подробное описание ошибки
+          example: "Сервер не смог обработать запрос из-за некорректного синтаксиса"
+    
